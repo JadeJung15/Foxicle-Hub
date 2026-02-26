@@ -35,6 +35,7 @@ function App() {
         officePosition,
         leaderboard,
         ownedUpgrades,
+        dailyMissions,
         toggleWorkMode,
         setActiveTab,
         setWorkTemplate,
