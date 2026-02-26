@@ -3,7 +3,7 @@ import { TrendingUp, TrendingDown, Wallet, PieChart, Info, ArrowRightLeft } from
 import useGameStore from '../store/useGameStore'
 
 function Investment() {
-    const { points, stocks, portfolio, updateStockPrices, buyStock, sellStock } = useGameStore()
+    const { points, stocks, portfolio, marketNews, updateStockPrices, buyStock, sellStock } = useGameStore()
     const [selectedStockId, setSelectedStockId] = useState(stocks[0].id)
     const [buyAmount, setBuyAmount] = useState(1)
 
@@ -31,6 +31,25 @@ function Investment() {
                 <h2 style={{ fontSize: '32px', fontWeight: '800', letterSpacing: '-1px' }}>루팡 재테크 센터</h2>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '18px' }}>포인트는 모으는 것이 아니라 불리는 것입니다.</p>
             </header>
+
+            {/* Market News Ticker */}
+            <div className="market-news glass animate-fade">
+                <div className="news-tag">BREAKING NEWS</div>
+                <div className="news-content">
+                    <span
+                        className="news-text"
+                        style={{ color: marketNews.impact > 1 ? '#ff3b30' : marketNews.impact < 1 ? '#0071e3' : 'inherit' }}
+                    >
+                        {marketNews.text}
+                    </span>
+                    {marketNews.targetId && (
+                        <span className="news-target">({stocks.find(s => s.id === marketNews.targetId)?.name})</span>
+                    )}
+                </div>
+                <div className="news-impact">
+                    {marketNews.impact > 1 ? '▲ 호재' : marketNews.impact < 1 ? '▼ 악재' : '● 중립'}
+                </div>
+            </div>
 
             <div className="invest-grid">
                 {/* Stock List */}
@@ -131,7 +150,19 @@ function Investment() {
 
             <style>{`
         .investment-container { text-align: left; padding-bottom: 60px; }
-        .invest-header { margin-bottom: 40px; }
+        .invest-header { margin-bottom: 20px; }
+        .market-news { 
+            padding: 15px 25px; margin-bottom: 30px; display: flex; align-items: center; gap: 20px;
+            background: rgba(0, 113, 227, 0.03); border-left: 4px solid var(--accent-blue);
+        }
+        .news-tag { 
+            background: #ff3b30; color: white; padding: 2px 8px; border-radius: 4px; 
+            font-size: 10px; font-weight: 900; letter-spacing: 1px;
+        }
+        .news-content { flex: 1; font-size: 14px; font-weight: 600; }
+        .news-target { margin-left: 8px; font-size: 12px; color: var(--text-secondary); }
+        .news-impact { font-size: 12px; font-weight: 800; color: var(--text-secondary); }
+
         .invest-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 24px; margin-bottom: 24px; }
         .section-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; display: flex; alignItems: center; gap: 8px; }
         

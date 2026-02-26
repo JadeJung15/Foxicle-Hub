@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { Layout, TrendingUp, Laptop, ClipboardList, ShieldAlert, Mail } from 'lucide-react'
+import { Layout, TrendingUp, Laptop, ClipboardList, ShieldAlert, Mail, Hash } from 'lucide-react'
 import DiceGame from './DiceGame'
 import OfficeSlot from './OfficeSlot'
 import WorkSorting from './WorkSorting'
 import BossEscape from './BossEscape'
 import EmailClean from './EmailClean'
+import MeetingBingo from './MeetingBingo'
 
 function GameCenter() {
   const [activeGame, setActiveGame] = useState(null)
@@ -49,6 +50,14 @@ function GameCenter() {
       icon: <Mail size={32} color="#5856d6" />,
       tag: '순발력',
       component: <EmailClean />
+    },
+    {
+      id: 'bingo',
+      title: '회의 시간 빌런 빙고',
+      desc: '상사의 회의 Buzzword를 지워가며 지루함을 견디세요.',
+      icon: <Hash size={32} color="#ff375f" />,
+      tag: '스페셜',
+      component: <MeetingBingo />
     }
   ]
 

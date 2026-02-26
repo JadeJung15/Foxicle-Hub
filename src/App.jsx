@@ -5,6 +5,8 @@ import FoxicleLab from './components/FoxicleLab'
 import ItemShop from './components/ItemShop'
 import Investment from './components/Investment'
 import CommunityLounge from './components/CommunityLounge'
+import AchievementCenter from './components/AchievementCenter'
+import CareerCenter from './components/CareerCenter'
 import {
     Monitor,
     Briefcase,
@@ -20,7 +22,8 @@ import {
     Trophy,
     Medal,
     ShoppingBag,
-    LineChart
+    LineChart,
+    Award
 } from 'lucide-react'
 
 function App() {
@@ -83,6 +86,8 @@ function App() {
                     <NavItem active={activeTab === 'pets'} onClick={() => setActiveTab('pets')} icon={<PawPrint size={20} />} label="폭시클 연구소" />
                     <NavItem active={activeTab === 'shop'} onClick={() => setActiveTab('shop')} icon={<ShoppingBag size={20} />} label="포인트 상점" />
                     <NavItem active={activeTab === 'invest'} onClick={() => setActiveTab('invest')} icon={<LineChart size={20} />} label="루팡 재테크" />
+                    <NavItem active={activeTab === 'achievements'} onClick={() => setActiveTab('achievements')} icon={<Trophy size={20} />} label="업적 센터" />
+                    <NavItem active={activeTab === 'career'} onClick={() => setActiveTab('career')} icon={<Award size={20} />} label="커리어 센터" />
                     <NavItem active={activeTab === 'community'} onClick={() => setActiveTab('community')} icon={<MessageSquare size={20} />} label="비밀 라운지" />
                 </nav>
 
@@ -273,6 +278,18 @@ function App() {
                     {activeTab === 'invest' && (
                         <div style={{ marginTop: '0' }}>
                             <Investment />
+                        </div>
+                    )}
+
+                    {activeTab === 'achievements' && (
+                        <div style={{ marginTop: '0' }}>
+                            <AchievementCenter />
+                        </div>
+                    )}
+
+                    {activeTab === 'career' && (
+                        <div style={{ marginTop: '0' }}>
+                            <CareerCenter />
                         </div>
                     )}
 
