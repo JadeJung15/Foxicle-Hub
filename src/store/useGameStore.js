@@ -487,6 +487,67 @@ const useGameStore = create((set) => ({
         if (type === 'border') return { equippedBorder: itemId }
         if (type === 'background') return { equippedBackground: itemId }
         return {}
+    }),
+
+    // Phase 9: Pet System 2.0 Actions
+    petInteract: (id) => set((state) => ({
+        pets: state.pets.map(pet => {
+            if (pet.id === id) {
+                return { ...pet, happiness: Math.min(100, (pet.happiness || 50) + 10) }
+            }
+            return pet
+        })
+    })),
+
+    startPetWalk: (id) => set((state) => {
+        const walkDuration = 1000 * 60; // 1분 산책
+        return {
+            pets: state.pets.map(pet => {
+                if (pet.id === id && !pet.isWalking) {
+                    return { ...pet, isWalking: true, walkEndTime: Date.now() + walkDuration }
+                }
+                return pet
+            })
+        }
+    }),
+
+    claimWalkReward: (id) => set((state) => {
+        let rewardPoints = 0;
+        let rewardExp = 0;
+        let petFound = false;
+
+        const newPets = state.pets.map(pet => {
+            if (pet.id === id && pet.isWalking && pet.walkEndTime && Date.now() >= pet.walkEndTime) {
+                petFound = true;
+                rewardPoints = 500 + (pet.level * 100);
+                rewardExp = 50 + (pet.level * 10);
+
+                // 레벨업 로직 단순화
+                const newExp = pet.experience + rewardExp;
+                const neededExp = pet.level * 50;
+                let newLevel = pet.level;
+                let finalExp = newExp;
+                if (newExp >= neededExp) {
+                    newLevel += 1;
+                    finalExp = newExp - neededExp;
+                }
+
+                return {
+                    ...pet,
+                    isWalking: false,
+                    walkEndTime: null,
+                    level: newLevel,
+                    experience: finalExp,
+                    happiness: Math.min(100, (pet.happiness || 50) + 20)
+                }
+            }
+            return pet
+        });
+
+        if (petFound) {
+            return { pets: newPets, points: state.points + rewardPoints }
+        }
+        return {}
     })
 }))
 

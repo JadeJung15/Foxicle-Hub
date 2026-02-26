@@ -1,124 +1,166 @@
 import { useState } from 'react'
-import { PawPrint, ShoppingCart, Zap, Heart, Info, Star } from 'lucide-react'
+import { PawPrint, ShoppingCart, Zap, Heart, Info, Star, Flag, Target } from 'lucide-react'
 import useGameStore from '../store/useGameStore'
+import PetRacing from './PetRacing'
+import PetTraining from './PetTraining'
 
 function FoxicleLab() {
-    const { points, inventory, pets, buyEgg, hatchEgg, feedPet, trainPet } = useGameStore()
-    const [isHatching, setIsHatching] = useState(false)
+  const { points, inventory, pets, buyEgg, hatchEgg, feedPet, trainPet, petInteract, startPetWalk, claimWalkReward } = useGameStore()
+  const [isHatching, setIsHatching] = useState(false)
+  const [activeLabTab, setActiveLabTab] = useState('manage')
+  const [interactingPet, setInteractingPet] = useState(null)
 
-    const handleHatch = () => {
-        if (inventory.eggs <= 0) return
-        setIsHatching(true)
+  const handlePetInteract = (id) => {
+    petInteract(id)
+    setInteractingPet(id)
+    setTimeout(() => setInteractingPet(null), 1000)
+  }
 
-        // 부화 애니메이션 시뮬레이션
-        setTimeout(() => {
-            hatchEgg()
-            setIsHatching(false)
-        }, 2000)
-    }
+  const handleHatch = () => {
+    if (inventory.eggs <= 0) return
+    setIsHatching(true)
 
-    return (
-        <div className="lab-container">
-            {/* 1. 상단: 알 상점 및 인벤토리 */}
-            <div className="shop-section glass">
-                <div className="section-header">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <ShoppingCart size={22} color="var(--accent-blue)" />
-                        <h2 style={{ fontSize: '20px', fontWeight: '600' }}>연구소 보관함</h2>
-                    </div>
-                    <div className="egg-counter">
-                        <Zap size={14} />
-                        <span>보유 중인 알: {inventory.eggs}개</span>
-                    </div>
-                </div>
+    // 부화 애니메이션 시뮬레이션
+    setTimeout(() => {
+      hatchEgg()
+      setIsHatching(false)
+    }, 2000)
+  }
 
-                <div className="shop-actions">
-                    <div className="egg-info">
-                        <h3>프리미엄 폭시클 알</h3>
-                        <p>생체 데이터가 포함된 무작위 폭시클 동료가 잠들어 있습니다.</p>
-                        <div className="price-tag">500 FP</div>
-                    </div>
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                        <button className="btn btn-primary" onClick={buyEgg}>구매하기</button>
-                        <button
-                            className="btn btn-outline"
-                            onClick={handleHatch}
-                            disabled={isHatching || inventory.eggs <= 0}
-                        >
-                            {isHatching ? '부화 진행 중...' : '부화하기'}
-                        </button>
-                    </div>
-                </div>
+  return (
+    <div className="lab-container animate-fade">
+      <div className="lab-tabs glass" style={{ display: 'flex', gap: '10px', padding: '10px', marginBottom: '20px' }}>
+        <button className={`btn ${activeLabTab === 'manage' ? 'btn-primary' : 'btn-outline'}`} onClick={() => setActiveLabTab('manage')}>동료 관리 (기본)</button>
+        <button className={`btn ${activeLabTab === 'racing' ? 'btn-primary' : 'btn-outline'}`} onClick={() => setActiveLabTab('racing')}>펫 레이싱</button>
+        <button className={`btn ${activeLabTab === 'training' ? 'btn-primary' : 'btn-outline'}`} onClick={() => setActiveLabTab('training')}>스파르타 훈련소</button>
+      </div>
+
+      {activeLabTab === 'racing' && <PetRacing />}
+      {activeLabTab === 'training' && <PetTraining />}
+
+      {activeLabTab === 'manage' && (
+        <>
+          {/* 1. 상단: 알 상점 및 인벤토리 */}
+          <div className="shop-section glass">
+            <div className="section-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <ShoppingCart size={22} color="var(--accent-blue)" />
+                <h2 style={{ fontSize: '20px', fontWeight: '600' }}>연구소 보관함</h2>
+              </div>
+              <div className="egg-counter">
+                <Zap size={14} />
+                <span>보유 중인 알: {inventory.eggs}개</span>
+              </div>
             </div>
 
-            {/* 2. 하단: 내 펫 목록 */}
-            <div className="pets-section">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                    <h2 style={{ fontSize: '24px', fontWeight: '700' }}>내 동료 목록</h2>
-                    <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: '14px', fontWeight: '600', color: 'var(--accent-blue)' }}>
-                            자동 수익: +{pets.reduce((sum, p) => sum + p.level, 0)} FP / 10초
+            <div className="shop-actions">
+              <div className="egg-info">
+                <h3>프리미엄 폭시클 알</h3>
+                <p>생체 데이터가 포함된 무작위 폭시클 동료가 잠들어 있습니다.</p>
+                <div className="price-tag">500 FP</div>
+              </div>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button className="btn btn-primary" onClick={buyEgg}>구매하기</button>
+                <button
+                  className="btn btn-outline"
+                  onClick={handleHatch}
+                  disabled={isHatching || inventory.eggs <= 0}
+                >
+                  {isHatching ? '부화 진행 중...' : '부화하기'}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* 2. 하단: 내 펫 목록 */}
+          <div className="pets-section">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h2 style={{ fontSize: '24px', fontWeight: '700' }}>내 동료 목록</h2>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: '14px', fontWeight: '600', color: 'var(--accent-blue)' }}>
+                  자동 수익: +{pets.reduce((sum, p) => sum + p.level, 0)} FP / 10초
+                </div>
+                <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>총 {pets.length}마리</span>
+              </div>
+            </div>
+
+            {pets.length === 0 ? (
+              <div className="empty-pets glass">
+                <PawPrint size={48} color="#e1e1e3" />
+                <p>보유 중인 동료가 없습니다. 알을 구매하여 첫 동료를 만나보세요.</p>
+              </div>
+            ) : (
+              <div className="pets-grid">
+                {pets.map(pet => (
+                  <div key={pet.id} className="pet-card glass">
+                    <div className="pet-rarity" style={{ color: pet.color }}>{pet.rarity}</div>
+                    <div
+                      className={`pet-avatar ${pet.isWalking ? 'pet-animated-walk' : 'pet-animated-breathe'}`}
+                      style={{ backgroundColor: `${pet.color}15`, cursor: 'pointer', position: 'relative' }}
+                      onClick={() => handlePetInteract(pet.id)}
+                      title="쓰다듬기!"
+                    >
+                      <PawPrint size={40} color={pet.color} />
+                      {interactingPet === pet.id && <Heart size={20} className="heart-float" style={{ left: '30%', bottom: '80%' }} />}
+                    </div>
+                    <div className="pet-info">
+                      <h3 className="pet-name">{pet.name}</h3>
+                      <div className="pet-stats">
+                        <div className="stat">
+                          <Star size={12} color="#ffcc00" fill="#ffcc00" />
+                          <span>Lv.{pet.level}</span>
                         </div>
-                        <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>총 {pets.length}마리</span>
+                        <div className="stat">
+                          <Heart size={12} color="#ff3b30" fill="#ff3b30" />
+                          <span>{pet.happiness || 50}%</span>
+                        </div>
+                      </div>
+
+                      {/* Walking status indicator */}
+                      {pet.isWalking && (
+                        <div style={{ fontSize: '11px', color: 'var(--accent-blue)', fontWeight: '700', marginBottom: '8px', padding: '4px', background: 'rgba(0,113,227,0.1)', borderRadius: '4px', textAlign: 'center' }}>
+                          🚶‍♂️ 산책 중...
+                        </div>
+                      )}
+
+                      {/* EXP Bar */}
+                      <div className="pet-exp-container">
+                        <div className="pet-exp-bar">
+                          <div className="pet-exp-fill" style={{
+                            width: `${(pet.experience / (pet.level * 50)) * 100}%`,
+                            backgroundColor: pet.color
+                          }}></div>
+                        </div>
+                        <span className="exp-text">{pet.experience} / {pet.level * 50}</span>
+                      </div>
+
+                      <div className="pet-yield">
+                        수익: <span style={{ fontWeight: '700' }}>+{pet.level} FP</span>
+                      </div>
                     </div>
-                </div>
-
-                {pets.length === 0 ? (
-                    <div className="empty-pets glass">
-                        <PawPrint size={48} color="#e1e1e3" />
-                        <p>보유 중인 동료가 없습니다. 알을 구매하여 첫 동료를 만나보세요.</p>
+                    <div className="pet-actions" style={{ flexWrap: 'wrap' }}>
+                      <button className="btn-small" onClick={() => feedPet(pet.id)} disabled={pet.isWalking}>
+                        먹이 (50)
+                      </button>
+                      {pet.isWalking ? (
+                        <button className="btn-small" onClick={() => claimWalkReward(pet.id)} style={{ backgroundColor: 'var(--accent-blue)', color: 'white' }}>
+                          보상 획득
+                        </button>
+                      ) : (
+                        <button className="btn-small" onClick={() => startPetWalk(pet.id)}>
+                          산책 파견
+                        </button>
+                      )}
                     </div>
-                ) : (
-                    <div className="pets-grid">
-                        {pets.map(pet => (
-                            <div key={pet.id} className="pet-card glass">
-                                <div className="pet-rarity" style={{ color: pet.color }}>{pet.rarity}</div>
-                                <div className="pet-avatar" style={{ backgroundColor: `${pet.color}15` }}>
-                                    <PawPrint size={40} color={pet.color} />
-                                </div>
-                                <div className="pet-info">
-                                    <h3 className="pet-name">{pet.name}</h3>
-                                    <div className="pet-stats">
-                                        <div className="stat">
-                                            <Star size={12} color="#ffcc00" fill="#ffcc00" />
-                                            <span>Lv.{pet.level}</span>
-                                        </div>
-                                        <div className="stat">
-                                            <Heart size={12} color="#ff3b30" fill="#ff3b30" />
-                                            <span>{pet.happiness}%</span>
-                                        </div>
-                                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </>
+      )}
 
-                                    {/* EXP Bar */}
-                                    <div className="pet-exp-container">
-                                        <div className="pet-exp-bar">
-                                            <div className="pet-exp-fill" style={{
-                                                width: `${(pet.experience / (pet.level * 50)) * 100}%`,
-                                                backgroundColor: pet.color
-                                            }}></div>
-                                        </div>
-                                        <span className="exp-text">{pet.experience} / {pet.level * 50}</span>
-                                    </div>
-
-                                    <div className="pet-yield">
-                                        수익: <span style={{ fontWeight: '700' }}>+{pet.level} FP</span>
-                                    </div>
-                                </div>
-                                <div className="pet-actions">
-                                    <button className="btn-small" onClick={() => feedPet(pet.id)}>
-                                        먹이 (50)
-                                    </button>
-                                    <button className="btn-small" onClick={() => trainPet(pet.id)}>
-                                        훈련 (100)
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
-
-            <style>{`
+      <style>{`
         .lab-container {
           display: flex;
           flex-direction: column;
@@ -306,8 +348,8 @@ function FoxicleLab() {
           border: 1px dashed #e1e1e3;
         }
       `}</style>
-        </div>
-    )
+    </div>
+  )
 }
 
 export default FoxicleLab
