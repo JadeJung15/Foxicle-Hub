@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import useGameStore from './store/useGameStore'
 import GameCenter from './components/GameCenter'
 import FoxicleLab from './components/FoxicleLab'
@@ -23,10 +23,14 @@ import {
     Medal,
     ShoppingBag,
     LineChart,
-    Award
+    Award,
+    ChevronLeft,
+    ChevronRight,
+    Menu
 } from 'lucide-react'
 
 function App() {
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
     const {
         points,
         level,
@@ -75,33 +79,44 @@ function App() {
     }
 
     return (
-        <div className={`app-layout ${isDarkTheme ? 'dark-theme' : ''} ${equippedBackground ? 'bg-' + equippedBackground : ''} animate-fade`}>
+        <div className={`app-layout ${isDarkTheme ? 'dark-theme' : ''} ${equippedBackground ? 'bg-' + equippedBackground : ''} ${isSidebarCollapsed ? 'sidebar-collapsed' : ''} animate-fade`}>
             {/* Sidebar */}
-            <aside className="sidebar glass">
-                <div className="brand">
-                    <Zap size={24} style={{ color: '#0071e3' }} />
-                    <span className="brand-name">Foxicle Hub</span>
+            <aside className={`sidebar glass ${isSidebarCollapsed ? 'collapsed' : ''}`}>
+                <div className="sidebar-header">
+                    <div className="brand">
+                        <Zap size={24} style={{ color: '#0071e3', minWidth: '24px' }} />
+                        {!isSidebarCollapsed && <span className="brand-name">Foxicle Hub</span>}
+                    </div>
+                    <button
+                        className="sidebar-toggle-btn glass"
+                        onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                        title={isSidebarCollapsed ? "메뉴 펼치기" : "메뉴 접기"}
+                    >
+                        {isSidebarCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+                    </button>
                 </div>
 
                 <nav className="nav-menu">
-                    <NavItem active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} icon={<Monitor size={20} />} label="대시보드" />
-                    <NavItem active={activeTab === 'games'} onClick={() => setActiveTab('games')} icon={<TrendingUp size={20} />} label="루팡 게임 센터" />
-                    <NavItem active={activeTab === 'pets'} onClick={() => setActiveTab('pets')} icon={<PawPrint size={20} />} label="폭시클 연구소 (펫)" />
-                    <NavItem active={activeTab === 'shop'} onClick={() => setActiveTab('shop')} icon={<ShoppingBag size={20} />} label="포인트 상점" />
-                    <NavItem active={activeTab === 'invest'} onClick={() => setActiveTab('invest')} icon={<LineChart size={20} />} label="루팡 재테크" />
-                    <NavItem active={activeTab === 'achievements'} onClick={() => setActiveTab('achievements')} icon={<Trophy size={20} />} label="업적 센터" />
-                    <NavItem active={activeTab === 'career'} onClick={() => setActiveTab('career')} icon={<Award size={20} />} label="커리어 센터" />
-                    <NavItem active={activeTab === 'community'} onClick={() => setActiveTab('community')} icon={<MessageSquare size={20} />} label="비밀 라운지" />
+                    <NavItem active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} icon={<Monitor size={20} />} label="대시보드" collapsed={isSidebarCollapsed} />
+                    <NavItem active={activeTab === 'games'} onClick={() => setActiveTab('games')} icon={<TrendingUp size={20} />} label="루팡 게임 센터" collapsed={isSidebarCollapsed} />
+                    <NavItem active={activeTab === 'pets'} onClick={() => setActiveTab('pets')} icon={<PawPrint size={20} />} label="폭시클 연구소 (펫)" collapsed={isSidebarCollapsed} />
+                    <NavItem active={activeTab === 'shop'} onClick={() => setActiveTab('shop')} icon={<ShoppingBag size={20} />} label="포인트 상점" collapsed={isSidebarCollapsed} />
+                    <NavItem active={activeTab === 'invest'} onClick={() => setActiveTab('invest')} icon={<LineChart size={20} />} label="루팡 재테크" collapsed={isSidebarCollapsed} />
+                    <NavItem active={activeTab === 'achievements'} onClick={() => setActiveTab('achievements')} icon={<Trophy size={20} />} label="업적 센터" collapsed={isSidebarCollapsed} />
+                    <NavItem active={activeTab === 'career'} onClick={() => setActiveTab('career')} icon={<Award size={20} />} label="커리어 센터" collapsed={isSidebarCollapsed} />
+                    <NavItem active={activeTab === 'community'} onClick={() => setActiveTab('community')} icon={<MessageSquare size={20} />} label="비밀 라운지" collapsed={isSidebarCollapsed} />
                 </nav>
 
-                <div className={`user-profile ${equippedAura ? 'aura-' + equippedAura : ''}`}>
+                <div className={`user-profile ${equippedAura ? 'aura-' + equippedAura : ''} ${isSidebarCollapsed ? 'collapsed' : ''}`}>
                     <div className={`avatar ${equippedBorder ? 'border-' + equippedBorder : ''}`}>
                         <User size={20} />
                     </div>
-                    <div className="user-info">
-                        <p className="username">{username}</p>
-                        <p className="position">{officePosition}</p>
-                    </div>
+                    {!isSidebarCollapsed && (
+                        <div className="user-info">
+                            <p className="username">{username}</p>
+                            <p className="position">{officePosition}</p>
+                        </div>
+                    )}
                 </div>
             </aside>
 
@@ -319,6 +334,7 @@ function App() {
           padding: 30px 20px;
           z-index: 100;
           height: 100%;
+          transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s ease;
         }
 
         .brand {
@@ -333,6 +349,48 @@ function App() {
           font-weight: 600;
           font-size: 19px;
           letter-spacing: -0.5px;
+        }
+
+        .sidebar-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 30px;
+          min-height: 40px;
+        }
+
+        .sidebar-toggle-btn {
+          width: 28px;
+          height: 28px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: all 0.2s;
+          color: var(--text-secondary);
+          border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .sidebar-toggle-btn:hover {
+          background: white;
+          color: var(--accent-blue);
+          border-color: var(--accent-blue);
+        }
+
+        .sidebar.collapsed {
+          width: 80px;
+          padding: 30px 15px;
+          align-items: center;
+        }
+
+        .sidebar.collapsed .brand {
+          justify-content: center;
+          margin-bottom: 0;
+        }
+
+        .sidebar-collapsed .main-content {
+          margin-left: 80px;
         }
 
         .nav-menu {
@@ -354,6 +412,18 @@ function App() {
         .nav-item:hover, .nav-item.active {
           background: rgba(0, 113, 227, 0.08);
           color: var(--accent-blue);
+        }
+
+        .nav-item.collapsed {
+          padding: 12px;
+          justify-content: center;
+          gap: 0;
+        }
+
+        .nav-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
         .dashboard-layout {
@@ -488,10 +558,11 @@ function App() {
 
         .main-content {
           flex: 1;
-          display: flex;
-          flex-direction: column;
+          margin-left: 260px;
+          padding: 30px;
           background-color: var(--bg-primary);
           overflow-y: auto;
+          transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .top-bar {
@@ -675,11 +746,15 @@ function App() {
     )
 }
 
-function NavItem({ active, onClick, icon, label }) {
+function NavItem({ active, onClick, icon, label, collapsed }) {
     return (
-        <div className={`nav-item ${active ? 'active' : ''}`} onClick={onClick}>
-            {icon}
-            <span>{label}</span>
+        <div
+            className={`nav-item ${active ? 'active' : ''} ${collapsed ? 'collapsed' : ''}`}
+            onClick={onClick}
+            title={collapsed ? label : ""}
+        >
+            <div className="nav-icon">{icon}</div>
+            {!collapsed && <span className="nav-label">{label}</span>}
         </div>
     )
 }
