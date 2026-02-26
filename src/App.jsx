@@ -1,4 +1,10 @@
 import { useEffect } from 'react'
+import useGameStore from './store/useGameStore'
+import GameCenter from './components/GameCenter'
+import FoxicleLab from './components/FoxicleLab'
+import ItemShop from './components/ItemShop'
+import Investment from './components/Investment'
+import CommunityLounge from './components/CommunityLounge'
 import {
     Monitor,
     Briefcase,
@@ -13,13 +19,9 @@ import {
     Layout,
     Trophy,
     Medal,
-    ShoppingBag
+    ShoppingBag,
+    LineChart
 } from 'lucide-react'
-import useGameStore from './store/useGameStore'
-import GameCenter from './components/GameCenter'
-import FoxicleLab from './components/FoxicleLab'
-import ItemShop from './components/ItemShop'
-import CommunityLounge from './components/CommunityLounge'
 
 function App() {
     const {
@@ -76,6 +78,7 @@ function App() {
                     <NavItem active={activeTab === 'games'} onClick={() => setActiveTab('games')} icon={<TrendingUp size={20} />} label="포인트 거래소" />
                     <NavItem active={activeTab === 'pets'} onClick={() => setActiveTab('pets')} icon={<PawPrint size={20} />} label="폭시클 연구소" />
                     <NavItem active={activeTab === 'shop'} onClick={() => setActiveTab('shop')} icon={<ShoppingBag size={20} />} label="포인트 상점" />
+                    <NavItem active={activeTab === 'invest'} onClick={() => setActiveTab('invest')} icon={<LineChart size={20} />} label="루팡 재테크" />
                     <NavItem active={activeTab === 'community'} onClick={() => setActiveTab('community')} icon={<MessageSquare size={20} />} label="비밀 라운지" />
                 </nav>
 
@@ -219,6 +222,12 @@ function App() {
                     {activeTab === 'shop' && (
                         <div style={{ marginTop: '0' }}>
                             <ItemShop />
+                        </div>
+                    )}
+
+                    {activeTab === 'invest' && (
+                        <div style={{ marginTop: '0' }}>
+                            <Investment />
                         </div>
                     )}
 

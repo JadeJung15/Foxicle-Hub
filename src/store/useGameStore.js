@@ -38,6 +38,12 @@ const useGameStore = create((set) => ({
         { id: 'esc_custom', name: '위장 테마 패키지', desc: '위장 모드 전용 다크 테마 잠금 해제', price: 2000, type: 'unlock' }
     ],
     ownedUpgrades: [],
+    stocks: [
+        { id: 'fox_electronics', name: '폭시전자', price: 1500, trend: 0, history: [1400, 1450, 1500] },
+        { id: 'banana_tech', name: '바나나테크', price: 800, trend: 0, history: [850, 820, 800] },
+        { id: 'office_coin', name: '오피스코인', price: 100, trend: 0, history: [90, 110, 100] }
+    ],
+    portfolio: [], // { stockId: string, amount: number, avgPrice: number }
 
     // Actions
     setPoints: (amount) => set((state) => ({ points: state.points + amount })),
@@ -207,11 +213,11 @@ const useGameStore = create((set) => ({
         let expGain = 0
 
         switch (type) {
-            case 'checkin': // 출석 (일 1회 느낌)
+            case 'checkin':
                 baseAmount = 50
                 expGain = 10
                 break
-            case 'chat': // 채팅/글쓰기
+            case 'chat':
                 baseAmount = 5
                 expGain = 2
                 break
@@ -226,6 +232,67 @@ const useGameStore = create((set) => ({
         return {
             points: state.points + baseAmount,
             experience: state.experience + expGain
+        }
+    }),
+
+    // 투자 시스템 액션
+    updateStockPrices: () => set((state) => ({
+        stocks: state.stocks.map(s => {
+            const change = (Math.random() - 0.5) * (s.id === 'office_coin' ? 40 : 10) // 코인은 변동폭 큼
+            const newPrice = Math.max(10, Math.floor(s.price + change))
+            return {
+                ...s,
+                price: newPrice,
+                trend: change,
+                history: [...s.history.slice(-9), newPrice]
+            }
+        })
+    })),
+
+    buyStock: (stockId, amount) => set((state) => {
+        const stock = state.stocks.find(s => s.id === stockId)
+        const totalCost = stock.price * amount
+        if (state.points < totalCost) {
+            alert('포인트가 부족합니다!')
+            return {}
+        }
+
+        const existing = state.portfolio.find(p => p.stockId === stockId)
+        let newPortfolio
+        if (existing) {
+            const newAmount = existing.amount + amount
+            const newAvgPrice = ((existing.avgPrice * existing.amount) + totalCost) / newAmount
+            newPortfolio = state.portfolio.map(p => p.stockId === stockId ? { ...p, amount: newAmount, avgPrice: newAvgPrice } : p)
+        } else {
+            newPortfolio = [...state.portfolio, { stockId, amount, avgPrice: stock.price }]
+        }
+
+        return {
+            points: state.points - totalCost,
+            portfolio: newPortfolio
+        }
+    }),
+
+    sellStock: (stockId, amount) => set((state) => {
+        const pos = state.portfolio.find(p => p.stockId === stockId)
+        if (!pos || pos.amount < amount) {
+            alert('보유 수량이 부족합니다!')
+            return {}
+        }
+
+        const stock = state.stocks.find(s => s.id === stockId)
+        const totalReturn = stock.price * amount
+
+        const newPortfolio = state.portfolio.map(p => {
+            if (p.stockId === stockId) {
+                return { ...p, amount: p.amount - amount }
+            }
+            return p
+        }).filter(p => p.amount > 0)
+
+        return {
+            points: state.points + totalReturn,
+            portfolio: newPortfolio
         }
     })
 }))
