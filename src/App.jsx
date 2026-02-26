@@ -12,11 +12,13 @@ import {
     MessageCircle,
     Layout,
     Trophy,
-    Medal
+    Medal,
+    ShoppingBag
 } from 'lucide-react'
 import useGameStore from './store/useGameStore'
 import GameCenter from './components/GameCenter'
 import FoxicleLab from './components/FoxicleLab'
+import ItemShop from './components/ItemShop'
 import CommunityLounge from './components/CommunityLounge'
 
 function App() {
@@ -73,6 +75,7 @@ function App() {
                     <NavItem active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} icon={<Monitor size={20} />} label="대시보드" />
                     <NavItem active={activeTab === 'games'} onClick={() => setActiveTab('games')} icon={<TrendingUp size={20} />} label="포인트 거래소" />
                     <NavItem active={activeTab === 'pets'} onClick={() => setActiveTab('pets')} icon={<PawPrint size={20} />} label="폭시클 연구소" />
+                    <NavItem active={activeTab === 'shop'} onClick={() => setActiveTab('shop')} icon={<ShoppingBag size={20} />} label="포인트 상점" />
                     <NavItem active={activeTab === 'community'} onClick={() => setActiveTab('community')} icon={<MessageSquare size={20} />} label="비밀 라운지" />
                 </nav>
 
@@ -210,6 +213,12 @@ function App() {
                     {activeTab === 'pets' && (
                         <div style={{ marginTop: '0' }}>
                             <FoxicleLab />
+                        </div>
+                    )}
+
+                    {activeTab === 'shop' && (
+                        <div style={{ marginTop: '0' }}>
+                            <ItemShop />
                         </div>
                     )}
 

@@ -32,6 +32,12 @@ const useGameStore = create((set) => ({
         { name: '영업2팀 최과장', level: 28, title: '코인 중독' },
         { name: '인사팀 정사원', level: 12, title: '꿈나무' }
     ],
+    shopItems: [
+        { id: 'exp_boost', name: '경험치 비약', desc: '1시간 동안 펫 획득 경험치 2배', price: 500, type: 'buff' },
+        { id: 'income_boost', name: '업무 자동화 툴', desc: '1시간 동안 자동 수익 1.5배', price: 1000, type: 'buff' },
+        { id: 'esc_custom', name: '위장 테마 패키지', desc: '위장 모드 전용 다크 테마 잠금 해제', price: 2000, type: 'unlock' }
+    ],
+    ownedUpgrades: [],
 
     // Actions
     setPoints: (amount) => set((state) => ({ points: state.points + amount })),
@@ -133,10 +139,32 @@ const useGameStore = create((set) => ({
 
         // 펫들의 레벨 합에 비례하여 포인트 생성 (반하자 밸런스: 레벨당 1 FP)
         const totalLevel = state.pets.reduce((sum, pet) => sum + pet.level, 0)
-        const bonusPoints = totalLevel
+
+        // 상점 버프 적용: 업무 자동화 툴 (1.5배)
+        const hasBoost = state.ownedUpgrades.includes('income_boost')
+        const bonusPoints = Math.floor(totalLevel * (hasBoost ? 1.5 : 1))
 
         return {
             points: state.points + bonusPoints
+        }
+    }),
+
+    buyItem: (itemId) => set((state) => {
+        const item = state.shopItems.find(i => i.id === itemId)
+        if (!item || state.points < item.price) {
+            alert('구매할 수 없습니다! (포인트 부족 혹은 아이템 정보 없음)')
+            return {}
+        }
+
+        // 이미 보유한 영구 해금 아이템인지 체크
+        if (item.type === 'unlock' && state.ownedUpgrades.includes(itemId)) {
+            alert('이미 보유하고 있는 아이템입니다.')
+            return {}
+        }
+
+        return {
+            points: state.points - item.price,
+            ownedUpgrades: [...state.ownedUpgrades, itemId]
         }
     }),
 
