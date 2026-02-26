@@ -23,6 +23,12 @@ const useGameStore = create((set) => ({
     activeTab: 'dashboard', // dashboard, games, shop, community
     workTemplate: 'excel', // excel, ppt, slack
 
+    // Customization State (New from sunofox-test)
+    equippedAura: null,
+    equippedBorder: null,
+    equippedBackground: null,
+    alchemyInventory: [], // { id, name, rarity, amount }
+
     // User Profile
     username: '루팡_' + Math.floor(Math.random() * 1000),
     officePosition: '사원',
@@ -46,7 +52,11 @@ const useGameStore = create((set) => ({
     shopItems: [
         { id: 'exp_boost', name: '경험치 비약', desc: '1시간 동안 펫 획득 경험치 2배', price: 500, type: 'buff' },
         { id: 'income_boost', name: '업무 자동화 툴', desc: '1시간 동안 자동 수익 1.5배', price: 1000, type: 'buff' },
-        { id: 'esc_custom', name: '위장 테마 패키지', desc: '위장 모드 전용 다크 테마 잠금 해제', price: 2000, type: 'unlock' }
+        { id: 'esc_custom', name: '위장 테마 패키지', desc: '위장 모드 전용 다크 테마 잠금 해제', price: 2000, type: 'unlock' },
+        // Customization Items
+        { id: 'aura_blue', name: '푸른 오라', desc: '프로필 주변에 푸른 빛이 감돕니다.', price: 3000, type: 'aura' },
+        { id: 'border_gold', name: '황금 테두리', desc: '아이콘에 화려한 황금 테두리를 적용합니다.', price: 5000, type: 'border' },
+        { id: 'bg_pixel', name: '픽셀 배경', desc: '프로필 배경을 레트로 픽셀 아트룸으로 변경합니다.', price: 4000, type: 'background' }
     ],
     ownedUpgrades: [],
     stocks: [
@@ -57,7 +67,9 @@ const useGameStore = create((set) => ({
     portfolio: [], // { stockId: string, amount: number, avgPrice: number }
     dailyMissions: [
         { id: 'spin_5', title: '오피스 슬롯 5회 스핀하기', progress: 0, target: 5, rewardPoints: 100, rewardExp: 20, completed: false },
-        { id: 'escape_100', title: '상사 피하기 100점 돌파', progress: 0, target: 100, rewardPoints: 200, rewardExp: 50, completed: false }
+        { id: 'escape_100', title: '상사 피하기 100점 돌파', progress: 0, target: 100, rewardPoints: 200, rewardExp: 50, completed: false },
+        { id: 'alchemy_1', title: '황금빛 연금술 1회 시도', progress: 0, target: 1, rewardPoints: 300, rewardExp: 50, completed: false },
+        { id: 'bomb_3', title: '위험한 폭탄 돌리기 3회 참여', progress: 0, target: 3, rewardPoints: 500, rewardExp: 100, completed: false }
     ],
 
     // Actions
@@ -431,6 +443,50 @@ const useGameStore = create((set) => ({
             return m
         })
         return { dailyMissions: nextMissions }
+    }),
+
+    // New Game Actions (Integrated from sunofox-test)
+    playAlchemy: () => set((state) => {
+        const successRate = 0.6
+        const isSuccess = Math.random() < successRate
+
+        if (!isSuccess) {
+            setTimeout(() => state.trackActivity('alchemy_1'), 0)
+            return { points: Math.max(0, state.points - 200) }
+        }
+
+        const resultExp = 300
+        const resultPoints = 1000
+        setTimeout(() => {
+            state.addExperience(resultExp)
+            state.trackActivity('alchemy_1')
+        }, 0)
+        return { points: state.points + resultPoints }
+    }),
+
+    playBombGame: (betAmount, riskLevel) => set((state) => {
+        if (state.points < betAmount) {
+            alert('포인트가 부족합니다!')
+            return {}
+        }
+
+        setTimeout(() => state.trackActivity('bomb_3'), 0)
+        const winChance = riskLevel === 'high' ? 0.3 : 0.7
+        const multiplier = riskLevel === 'high' ? 3.5 : 1.4
+        const isWin = Math.random() < winChance
+
+        if (isWin) {
+            return { points: state.points + Math.floor(betAmount * multiplier) }
+        } else {
+            return { points: state.points - betAmount }
+        }
+    }),
+
+    applyCustom: (type, itemId) => set((state) => {
+        if (type === 'aura') return { equippedAura: itemId }
+        if (type === 'border') return { equippedBorder: itemId }
+        if (type === 'background') return { equippedBackground: itemId }
+        return {}
     })
 }))
 

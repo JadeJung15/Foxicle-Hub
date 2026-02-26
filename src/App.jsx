@@ -39,6 +39,9 @@ function App() {
         leaderboard,
         ownedUpgrades,
         dailyMissions,
+        equippedAura,
+        equippedBorder,
+        equippedBackground,
         toggleWorkMode,
         setActiveTab,
         setWorkTemplate,
@@ -72,7 +75,7 @@ function App() {
     }
 
     return (
-        <div className={`app-layout ${isDarkTheme ? 'dark-theme' : ''} animate-fade`}>
+        <div className={`app-layout ${isDarkTheme ? 'dark-theme' : ''} ${equippedBackground ? 'bg-' + equippedBackground : ''} animate-fade`}>
             {/* Sidebar */}
             <aside className="sidebar glass">
                 <div className="brand">
@@ -82,8 +85,8 @@ function App() {
 
                 <nav className="nav-menu">
                     <NavItem active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} icon={<Monitor size={20} />} label="대시보드" />
-                    <NavItem active={activeTab === 'games'} onClick={() => setActiveTab('games')} icon={<TrendingUp size={20} />} label="포인트 거래소" />
-                    <NavItem active={activeTab === 'pets'} onClick={() => setActiveTab('pets')} icon={<PawPrint size={20} />} label="폭시클 연구소" />
+                    <NavItem active={activeTab === 'games'} onClick={() => setActiveTab('games')} icon={<TrendingUp size={20} />} label="루팡 게임 센터" />
+                    <NavItem active={activeTab === 'pets'} onClick={() => setActiveTab('pets')} icon={<PawPrint size={20} />} label="폭시클 연구소 (펫)" />
                     <NavItem active={activeTab === 'shop'} onClick={() => setActiveTab('shop')} icon={<ShoppingBag size={20} />} label="포인트 상점" />
                     <NavItem active={activeTab === 'invest'} onClick={() => setActiveTab('invest')} icon={<LineChart size={20} />} label="루팡 재테크" />
                     <NavItem active={activeTab === 'achievements'} onClick={() => setActiveTab('achievements')} icon={<Trophy size={20} />} label="업적 센터" />
@@ -91,8 +94,8 @@ function App() {
                     <NavItem active={activeTab === 'community'} onClick={() => setActiveTab('community')} icon={<MessageSquare size={20} />} label="비밀 라운지" />
                 </nav>
 
-                <div className="user-profile">
-                    <div className="avatar">
+                <div className={`user-profile ${equippedAura ? 'aura-' + equippedAura : ''}`}>
+                    <div className={`avatar ${equippedBorder ? 'border-' + equippedBorder : ''}`}>
                         <User size={20} />
                     </div>
                     <div className="user-info">
@@ -610,6 +613,53 @@ function App() {
         kbd {
           background-color: #eee;
           border-radius: 3px;
+          padding: 2px 5px;
+          font-size: 10px;
+          border: 1px solid #ccc;
+        }
+
+        /* Customization Effects (from sunofox-test) */
+        .aura-aura_blue {
+          position: relative;
+        }
+        .aura-aura_blue::after {
+          content: '';
+          position: absolute;
+          top: -10px; left: -10px; right: -10px; bottom: -10px;
+          background: radial-gradient(circle, rgba(163, 106, 255, 0.2) 0%, transparent 70%);
+          border-radius: 20px;
+          z-index: -1;
+          animation: aura-pulse 2s infinite alternate;
+        }
+        @keyframes aura-pulse {
+          from { opacity: 0.5; transform: scale(1); }
+          to { opacity: 1; transform: scale(1.05); }
+        }
+
+        .border-border_gold {
+          border: 2px solid #ff9500 !important;
+          box-shadow: 0 0 10px rgba(255, 149, 0, 0.5);
+          background: linear-gradient(135deg, #fff 0%, #fff9e6 100%) !important;
+        }
+
+        /* Background Customization */
+        .app-layout.bg-bg_pixel {
+          background-image: url('https://w.wallhaven.cc/full/28/wallhaven-2895ey.jpg'); /* Pixel Art Placeholder */
+          background-size: cover;
+          background-position: center;
+        }
+        .app-layout.bg-bg_pixel::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: rgba(255, 255, 255, 0.85); /* Readability overlay */
+          backdrop-filter: blur(10px);
+          z-index: 0;
+        }
+        .app-layout.bg-bg_pixel > * {
+          position: relative;
+          z-index: 1;
+        }
           border: 1px solid #b4b4b4;
           box-shadow: 0 1px 1px rgba(0, 0, 0, .2), 0 2px 0 0 rgba(255, 255, 255, .7) inset;
           color: #333;

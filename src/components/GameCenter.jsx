@@ -6,6 +6,9 @@ import WorkSorting from './WorkSorting'
 import BossEscape from './BossEscape'
 import EmailClean from './EmailClean'
 import MeetingBingo from './MeetingBingo'
+import AlchemyGame from './AlchemyGame'
+import BombGame from './BombGame'
+import { Beaker, Bomb } from 'lucide-react'
 
 function GameCenter() {
   const [activeGame, setActiveGame] = useState(null)
@@ -26,6 +29,22 @@ function GameCenter() {
       icon: <Laptop size={32} color="#ff9500" />,
       tag: '신규',
       component: <OfficeSlot />
+    },
+    {
+      id: 'alchemy',
+      title: '신비한 연금술 솥단지',
+      desc: '포인트를 정제하여 더 큰 행운을 연성하세요.',
+      icon: <Beaker size={32} color="#a366ff" />,
+      tag: '레퍼런스',
+      component: <AlchemyGame />
+    },
+    {
+      id: 'bomb',
+      title: '위험한 폭탄 돌리기',
+      desc: '터지기 전에 수익을 챙기세요. 하이리스크!',
+      icon: <Bomb size={32} color="#ff3b30" />,
+      tag: '레퍼런스',
+      component: <BombGame />
     },
     {
       id: 'sorting',
