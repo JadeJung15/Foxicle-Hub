@@ -44,6 +44,10 @@ const useGameStore = create((set) => ({
         { id: 'office_coin', name: '오피스코인', price: 100, trend: 0, history: [90, 110, 100] }
     ],
     portfolio: [], // { stockId: string, amount: number, avgPrice: number }
+    dailyMissions: [
+        { id: 'spin_5', title: '오피스 슬롯 5회 스핀하기', progress: 0, target: 5, rewardPoints: 100, rewardExp: 20, completed: false },
+        { id: 'escape_100', title: '상사 피하기 100점 돌파', progress: 0, target: 100, rewardPoints: 200, rewardExp: 50, completed: false }
+    ],
 
     // Actions
     setPoints: (amount) => set((state) => ({ points: state.points + amount })),
@@ -294,6 +298,30 @@ const useGameStore = create((set) => ({
             points: state.points + totalReturn,
             portfolio: newPortfolio
         }
+    }),
+
+    // 활동 트래킹 및 미션 로직
+    trackActivity: (missionId, value = 1) => set((state) => {
+        const nextMissions = state.dailyMissions.map(m => {
+            if (m.id === missionId && !m.completed) {
+                const newProgress = missionId === 'escape_100' ? Math.max(m.progress, value) : m.progress + value
+                const isNowCompleted = newProgress >= m.target
+
+                if (isNowCompleted && !m.completed) {
+                    // 보상 즉시 지급
+                    setTimeout(() => {
+                        set((s) => ({
+                            points: s.points + m.rewardPoints,
+                            experience: s.experience + m.rewardExp
+                        }))
+                    }, 0)
+                }
+
+                return { ...m, progress: newProgress, completed: isNowCompleted }
+            }
+            return m
+        })
+        return { dailyMissions: nextMissions }
     })
 }))
 

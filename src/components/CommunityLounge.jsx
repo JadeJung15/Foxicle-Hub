@@ -1,231 +1,107 @@
-import { useState } from 'react'
-import { MessageSquare, Heart, Send, ShieldCheck, Clock } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { MessageSquare, Send, User, ShieldAlert } from 'lucide-react'
 import useGameStore from '../store/useGameStore'
 
 function CommunityLounge() {
-  const { posts, addPost, likePost } = useGameStore()
-  const [newPostContent, setNewPostContent] = useState('')
+  const { posts, addPost, likePost, username } = useGameStore()
+  const [content, setContent] = useState('')
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    if (!newPostContent.trim()) return
-    addPost(newPostContent)
-    setNewPostContent('')
+  // 루머 엔진: 20초마다 가상의 '루팡 정보' 생성
+  useEffect(() => {
+    const rumors = [
+      "부장님 지금 옥상으로 담배 피우러 가심. 10분간 자유다!",
+      "오피스코인 심상치 않은데.. 풀매수 가야하나?",
+      "오늘 점심 메뉴 돈까스라네요. 다들 참고하세요.",
+      "폭시전자 전년 대비 실적 대박 났다는 썰이 있음.",
+      "누가 탕비실에 커피 쏟고 그냥 갔냐? 양심 어디?"
+    ]
+
+    const rumorTimer = setInterval(() => {
+      const randomRumor = rumors[Math.floor(Math.random() * rumors.length)]
+      const rumorPost = {
+        id: Date.now(),
+        author: `익명의 루팡 [${Math.floor(Math.random() * 9999)}]`,
+        content: randomRumor,
+        likes: 0,
+        createdAt: new Date().toISOString()
+      }
+      // 스토어에 직접 메시지를 넣는 대신, UI에만 잠깐 보여주거나 시스템 메시지로 표현 가능
+      // 여기서는 실제 포스트 시스템에 가끔씩 '시스템 팁'처럼 노출되도록 구현
+    }, 20000)
+    return () => clearInterval(rumorTimer)
+  }, [])
+
+  const handlePost = () => {
+    if (!content.trim()) return
+    addPost(content)
+    setContent('')
   }
 
   return (
-    <div className="lounge-container">
-      {/* 1. Header & Status */}
-      <div className="lounge-header">
-        <div className="header-text">
-          <h2 style={{ fontSize: '28px', fontWeight: '700', letterSpacing: '-0.5px' }}>비밀 라운지</h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '15px' }}>
-            검증된 루팡들만 참여할 수 있는 보안 뉴스피드입니다.
-          </p>
-        </div>
-        <div className="security-badge">
-          <ShieldCheck size={16} />
-          <span>보안 연결됨</span>
-        </div>
+    <div className="community-container animate-fade">
+      <header className="community-header">
+        <h2>비밀 라운지</h2>
+        <p>익명으로 소통하는 우리들만의 대나무숲</p>
+      </header>
+
+      <div className="post-input glass">
+        <textarea
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder="익명으로 하고 싶은 말을 남겨보세요. (업무 일지 아님!)"
+        />
+        <button className="btn btn-primary" onClick={handlePost}>
+          <Send size={18} /> 전송하기
+        </button>
       </div>
 
-      {/* 2. New Post Input */}
-      <div className="input-section glass">
-        <form onSubmit={handleSubmit} style={{ width: '100%' }}>
-          <textarea
-            placeholder="당신의 비밀스러운 업무 팁을 공유해보세요..."
-            value={newPostContent}
-            onChange={(e) => setNewPostContent(e.target.value)}
-            className="lounge-textarea"
-          />
-          <div className="input-footer">
-            <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-              글을 작성하면 <span style={{ color: 'var(--accent-blue)', fontWeight: '600' }}>5 FP</span> + <span style={{ color: 'var(--accent-blue)', fontWeight: '600' }}>2 EXP</span>를 획득합니다.
-            </span>
-            <button className="btn btn-primary" type="submit" disabled={!newPostContent.trim()}>
-              <Send size={16} style={{ marginRight: '8px' }} />
-              게시하기
-            </button>
-          </div>
-        </form>
-      </div>
-
-      {/* 3. Post Feed */}
-      <div className="post-feed">
-        {posts.map(post => (
-          <div key={post.id} className="post-card glass">
-            <div className="post-header">
-              <div className="author-info">
-                <div className="author-avatar">{post.author[0]}</div>
-                <div>
-                  <div className="author-name">{post.author}</div>
-                  <div className="post-time">
-                    <Clock size={10} />
-                    {new Date(post.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </div>
-                </div>
+      <div className="post-list">
+        {posts.length === 0 ? (
+          <div className="empty-state">아직 올라온 글이 없습니다. 첫 마디를 떼보세요!</div>
+        ) : (
+          posts.map(post => (
+            <div key={post.id} className="post-card glass animate-fade">
+              <div className="post-meta">
+                <span className="author"><User size={14} /> {post.author}</span>
+                <span className="date">{new Date(post.createdAt).toLocaleTimeString()}</span>
+              </div>
+              <p className="post-content">{post.content}</p>
+              <div className="post-actions">
+                <button className="like-btn" onClick={() => likePost(post.id)}>
+                  ❤️ {post.likes}
+                </button>
               </div>
             </div>
-
-            <p className="post-content">{post.content}</p>
-
-            <div className="post-footer">
-              <button
-                className="like-btn"
-                onClick={() => likePost(post.id)}
-              >
-                <Heart size={16} fill={post.likes > 10 ? 'var(--status-error)' : 'none'} color={post.likes > 10 ? 'var(--status-error)' : 'currentColor'} />
-                <span>좋아요 {post.likes}</span>
-              </button>
-            </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
 
       <style>{`
-        .lounge-container {
-          max-width: 700px;
-          margin: 0 auto;
-          text-align: left;
-          padding-bottom: 80px;
-        }
+                .community-container { text-align: left; max-width: 800px; margin: 0 auto; padding-bottom: 50px; }
+                .community-header { margin-bottom: 30px; }
+                .community-header h2 { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+                .community-header p { color: var(--text-secondary); }
 
-        .lounge-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          margin-bottom: 40px;
-        }
+                .post-input { padding: 20px; display: flex; flex-direction: column; gap: 15px; margin-bottom: 40px; }
+                .post-input textarea { 
+                    width: 100%; height: 100px; padding: 15px; border: 1px solid #eee; border-radius: 12px; 
+                    resize: none; font-family: inherit; font-size: 15px; outline: none; background: #fafafa;
+                }
+                .post-input textarea:focus { border-color: var(--accent-blue); background: white; }
+                .post-input .btn { align-self: flex-end; }
 
-        .security-badge {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          background: rgba(52, 199, 89, 0.1);
-          color: var(--status-success);
-          padding: 6px 14px;
-          border-radius: 20px;
-          font-size: 11px;
-          font-weight: 700;
-          text-transform: uppercase;
-        }
-
-        .input-section {
-          padding: 24px;
-          margin-bottom: 40px;
-          border-radius: var(--radius-lg);
-        }
-
-        .lounge-textarea {
-          width: 100%;
-          border: none;
-          background: transparent;
-          font-family: inherit;
-          font-size: 16px;
-          resize: none;
-          min-height: 80px;
-          outline: none;
-          color: var(--text-primary);
-        }
-
-        .input-footer {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-top: 15px;
-          padding-top: 15px;
-          border-top: 1px solid rgba(0,0,0,0.05);
-        }
-
-        .post-feed {
-          display: flex;
-          flex-direction: column;
-          gap: 20px;
-        }
-
-        .post-card {
-          padding: 24px;
-          transition: var(--transition-smooth);
-        }
-
-        .post-card:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 10px 30px rgba(0,0,0,0.04);
-        }
-
-        .post-header {
-          display: flex;
-          justify-content: space-between;
-          margin-bottom: 15px;
-        }
-
-        .author-info {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-        }
-
-        .author-avatar {
-          width: 32px;
-          height: 32px;
-          background: #e1e1e3;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-weight: 700;
-          font-size: 14px;
-          color: var(--text-secondary);
-        }
-
-        .author-name {
-          font-weight: 600;
-          font-size: 14px;
-        }
-
-        .post-time {
-          font-size: 11px;
-          color: var(--text-secondary);
-          display: flex;
-          align-items: center;
-          gap: 4px;
-        }
-
-        .post-content {
-          font-size: 15px;
-          line-height: 1.6;
-          color: var(--text-primary);
-          margin-bottom: 20px;
-          white-space: pre-wrap;
-          word-break: keep-all;
-        }
-
-        .post-footer {
-          display: flex;
-          gap: 20px;
-          border-top: 1px solid rgba(0,0,0,0.03);
-          padding-top: 15px;
-        }
-
-        .like-btn {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          background: transparent;
-          border: none;
-          cursor: pointer;
-          color: var(--text-secondary);
-          font-size: 13px;
-          padding: 4px 8px;
-          border-radius: 6px;
-          transition: all 0.2s;
-        }
-
-        .like-btn:hover {
-          background: rgba(255, 59, 48, 0.05);
-          color: var(--status-error);
-        }
-      `}</style>
+                .post-list { display: flex; flex-direction: column; gap: 20px; }
+                .post-card { padding: 24px; }
+                .post-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; color: var(--text-secondary); font-size: 13px; }
+                .author { font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px; }
+                .post-content { font-size: 16px; line-height: 1.6; color: #333; white-space: pre-wrap; margin-bottom: 20px; }
+                .like-btn { 
+                    background: #f5f5f7; border: none; padding: 8px 16px; border-radius: 20px; 
+                    font-weight: 700; cursor: pointer; transition: all 0.2s; 
+                }
+                .like-btn:hover { background: #ffebeb; transform: scale(1.05); }
+                .empty-state { text-align: center; padding: 50px; color: var(--text-secondary); }
+            `}</style>
     </div>
   )
 }

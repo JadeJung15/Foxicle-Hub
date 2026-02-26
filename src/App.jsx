@@ -175,26 +175,45 @@ function App() {
                                     />
                                 </div>
 
-                                {/* Daily Mission Section */}
+                                {/* Daily Mission Section: Real Data Binding */}
                                 <div className="daily-mission glass animate-fade" style={{ marginTop: '30px', padding: '30px', borderLeft: '4px solid var(--accent-blue)' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
                                         <h3 style={{ fontSize: '20px', fontWeight: '800' }}>오늘의 루팡 목표</h3>
-                                        <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--accent-blue)', background: '#e8f0fe', padding: '4px 12px', borderRadius: '20px' }}>진행 중</span>
+                                        <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--accent-blue)', background: '#e8f0fe', padding: '4px 12px', borderRadius: '20px' }}>
+                                            {dailyMissions.filter(m => m.completed).length === dailyMissions.length ? '모두 완료' : '진행 중'}
+                                        </span>
                                     </div>
-                                    <div className="mission-item" style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px 0', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
-                                        <div className="check-circle" style={{ width: '24px', height: '24px', borderRadius: '50%', border: '2px solid #ddd' }}></div>
-                                        <div style={{ flex: 1 }}>
-                                            <p style={{ fontWeight: '600', fontSize: '15px' }}>오피스 슬롯 5회 스핀하기</p>
-                                            <p style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>보상: 100 FP, 20 EXP</p>
+                                    {dailyMissions.map(mission => (
+                                        <div key={mission.id} className="mission-item" style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '15px',
+                                            padding: '15px 0',
+                                            borderBottom: mission.id === 'spin_5' ? '1px solid rgba(0,0,0,0.05)' : 'none',
+                                            opacity: mission.completed ? 0.6 : 1
+                                        }}>
+                                            <div className="check-circle" style={{
+                                                width: '24px',
+                                                height: '24px',
+                                                borderRadius: '50%',
+                                                border: mission.completed ? 'none' : '2px solid #ddd',
+                                                background: mission.completed ? 'var(--status-success)' : 'transparent',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                color: 'white',
+                                                fontSize: '14px'
+                                            }}>
+                                                {mission.completed ? '✓' : ''}
+                                            </div>
+                                            <div style={{ flex: 1 }}>
+                                                <p style={{ fontWeight: '600', fontSize: '15px', textDecoration: mission.completed ? 'line-through' : 'none' }}>
+                                                    {mission.title} ({mission.progress}/{mission.target})
+                                                </p>
+                                                <p style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>보상: {mission.rewardPoints} FP, {mission.rewardExp} EXP</p>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="mission-item" style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px 0' }}>
-                                        <div className="check-circle" style={{ width: '24px', height: '24px', borderRadius: '50%', border: '2px solid #ddd' }}></div>
-                                        <div style={{ flex: 1 }}>
-                                            <p style={{ fontWeight: '600', fontSize: '15px' }}>상사 피하기 100점 돌파</p>
-                                            <p style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>보상: 200 FP, 50 EXP</p>
-                                        </div>
-                                    </div>
+                                    ))}
                                 </div>
                             </div>
 

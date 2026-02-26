@@ -3,83 +3,84 @@ import { Coffee, MousePointer2, Monitor, Keyboard, RefreshCw } from 'lucide-reac
 import useGameStore from '../store/useGameStore'
 
 function OfficeSlot() {
-    const { points, setPoints } = useGameStore()
-    const [isSpinning, setIsSpinning] = useState(false)
-    const [reels, setReels] = useState([<Coffee />, <MousePointer2 />, <Monitor />])
-    const [resultMsg, setResultMsg] = useState('')
+  const { points, setPoints, trackActivity } = useGameStore()
+  const [isSpinning, setIsSpinning] = useState(false)
+  const [reels, setReels] = useState([<Coffee />, <MousePointer2 />, <Monitor />])
+  const [resultMsg, setResultMsg] = useState('')
 
-    const icons = [
-        { id: 'coffee', component: <Coffee />, value: 10 },
-        { id: 'mouse', component: <MousePointer2 />, value: 20 },
-        { id: 'monitor', component: <Monitor />, value: 50 },
-        { id: 'keyboard', component: <Keyboard />, value: 200 } // 잭팟용
-    ]
+  const icons = [
+    { id: 'coffee', component: <Coffee />, value: 10 },
+    { id: 'mouse', component: <MousePointer2 />, value: 20 },
+    { id: 'monitor', component: <Monitor />, value: 50 },
+    { id: 'keyboard', component: <Keyboard />, value: 200 } // 잭팟용
+  ]
 
-    const spin = () => {
-        const cost = 50
-        if (points < cost) {
-            alert('포인트가 부족합니다! (필요: 50 FP)')
-            return
-        }
-
-        setPoints(-cost)
-        setIsSpinning(true)
-        setResultMsg('')
-
-        setTimeout(() => {
-            const newReels = [
-                icons[Math.floor(Math.random() * icons.length)],
-                icons[Math.floor(Math.random() * icons.length)],
-                icons[Math.floor(Math.random() * icons.length)]
-            ]
-            setReels(newReels.map(i => i.component))
-
-            // 결과 체크
-            if (newReels[0].id === newReels[1].id && newReels[1].id === newReels[2].id) {
-                const prize = newReels[0].value * 10
-                setPoints(prize)
-                setResultMsg(`🎉 잭팟! ${prize.toLocaleString()} FP 획득!`)
-            } else if (newReels[0].id === newReels[1].id || newReels[1].id === newReels[2].id || newReels[0].id === newReels[2].id) {
-                const prize = 100
-                setPoints(prize)
-                setResultMsg(`👏 당첨! 100 FP 획득!`)
-            } else {
-                setResultMsg('아쉽네요. 다시 도전해보세요!')
-            }
-
-            setIsSpinning(false)
-        }, 1500)
+  const spin = () => {
+    const cost = 50
+    if (points < cost) {
+      alert('포인트가 부족합니다! (필요: 50 FP)')
+      return
     }
 
-    return (
-        <div className="slot-machine glass">
-            <h2 className="slot-title">오피스 슬롯 머신</h2>
-            <div className="reels-container">
-                {reels.map((icon, i) => (
-                    <div key={i} className={`reel ${isSpinning ? 'spinning' : ''}`}>
-                        <div className="icon-wrapper">{icon}</div>
-                    </div>
-                ))}
-            </div>
+    setPoints(-cost)
+    trackActivity('spin_5')
+    setIsSpinning(true)
+    setResultMsg('')
 
-            <div className="slot-info">
-                <p className="msg">{resultMsg || '레버를 당겨 행운을 확인하세요!'}</p>
-                <button className="spin-btn" onClick={spin} disabled={isSpinning}>
-                    {isSpinning ? 'SPINNING...' : 'SPIN (50 FP)'}
-                </button>
-            </div>
+    setTimeout(() => {
+      const newReels = [
+        icons[Math.floor(Math.random() * icons.length)],
+        icons[Math.floor(Math.random() * icons.length)],
+        icons[Math.floor(Math.random() * icons.length)]
+      ]
+      setReels(newReels.map(i => i.component))
 
-            <div className="payout-table">
-                <div className="table-title">배당표</div>
-                <div className="table-grid">
-                    <div className="table-item"><Coffee size={14} /> x3 = 100 FP</div>
-                    <div className="table-item"><MousePointer2 size={14} /> x3 = 200 FP</div>
-                    <div className="table-item"><Monitor size={14} /> x3 = 500 FP</div>
-                    <div className="table-item"><Keyboard size={14} /> x3 = 2000 FP</div>
-                </div>
-            </div>
+      // 결과 체크
+      if (newReels[0].id === newReels[1].id && newReels[1].id === newReels[2].id) {
+        const prize = newReels[0].value * 10
+        setPoints(prize)
+        setResultMsg(`🎉 잭팟! ${prize.toLocaleString()} FP 획득!`)
+      } else if (newReels[0].id === newReels[1].id || newReels[1].id === newReels[2].id || newReels[0].id === newReels[2].id) {
+        const prize = 100
+        setPoints(prize)
+        setResultMsg(`👏 당첨! 100 FP 획득!`)
+      } else {
+        setResultMsg('아쉽네요. 다시 도전해보세요!')
+      }
 
-            <style>{`
+      setIsSpinning(false)
+    }, 1500)
+  }
+
+  return (
+    <div className="slot-machine glass">
+      <h2 className="slot-title">오피스 슬롯 머신</h2>
+      <div className="reels-container">
+        {reels.map((icon, i) => (
+          <div key={i} className={`reel ${isSpinning ? 'spinning' : ''}`}>
+            <div className="icon-wrapper">{icon}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="slot-info">
+        <p className="msg">{resultMsg || '레버를 당겨 행운을 확인하세요!'}</p>
+        <button className="spin-btn" onClick={spin} disabled={isSpinning}>
+          {isSpinning ? 'SPINNING...' : 'SPIN (50 FP)'}
+        </button>
+      </div>
+
+      <div className="payout-table">
+        <div className="table-title">배당표</div>
+        <div className="table-grid">
+          <div className="table-item"><Coffee size={14} /> x3 = 100 FP</div>
+          <div className="table-item"><MousePointer2 size={14} /> x3 = 200 FP</div>
+          <div className="table-item"><Monitor size={14} /> x3 = 500 FP</div>
+          <div className="table-item"><Keyboard size={14} /> x3 = 2000 FP</div>
+        </div>
+      </div>
+
+      <style>{`
         .slot-machine {
           padding: 40px;
           text-align: center;
@@ -175,8 +176,8 @@ function OfficeSlot() {
           100% { transform: translateY(5px); opacity: 1; }
         }
       `}</style>
-        </div>
-    )
+    </div>
+  )
 }
 
 export default OfficeSlot

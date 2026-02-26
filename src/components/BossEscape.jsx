@@ -3,7 +3,7 @@ import { User, ShieldAlert, Zap, Timer, Star } from 'lucide-react'
 import useGameStore from '../store/useGameStore'
 
 function BossEscape() {
-    const { setPoints, earnPoints } = useGameStore()
+    const { setPoints, earnPoints, trackActivity } = useGameStore()
     const [gameState, setGameState] = useState('IDLE')
     const [score, setScore] = useState(0)
     const [playerY, setPlayerY] = useState(0)
@@ -63,8 +63,10 @@ function BossEscape() {
                 const collision = next.find(o => o.x < 15 && o.x > 5 && playerY < 40)
                 if (collision) {
                     setGameState('ENDED')
-                    setPoints(Math.floor(score / 5))
+                    const reward = Math.floor(score / 5)
+                    setPoints(reward)
                     earnPoints('game_win_small')
+                    trackActivity('escape_100', score)
                     clearInterval(gameLoop)
                 }
                 return next
@@ -72,7 +74,7 @@ function BossEscape() {
             setScore(s => s + 1)
         }, 30)
         return () => clearInterval(gameLoop)
-    }, [gameState, playerY, score, setPoints, earnPoints])
+    }, [gameState, playerY, score, setPoints, earnPoints, trackActivity])
 
     return (
         <div className="boss-escape glass" onClick={jump}>
