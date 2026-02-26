@@ -25,7 +25,18 @@ const useGameStore = create((set) => ({
 
     // User Profile
     username: '루팡_' + Math.floor(Math.random() * 1000),
-    officePosition: '대리',
+    officePosition: '사원',
+    achievements: [
+        { id: 'lv_5', title: '루팡 꿈나무', desc: '레벨 5 달성하기', target: 5, progress: 0, reward: 500, completed: false, claimed: false },
+        { id: 'rich_10k', title: '자산가', desc: '10,000 FP 보유하기', target: 10000, progress: 0, reward: 1000, completed: false, claimed: false },
+        { id: 'trader', title: '실전 투자자', desc: '주식/코인 10회 매수하기', target: 10, progress: 0, reward: 800, completed: false, claimed: false },
+        { id: 'pet_fan', title: '폭시클 아빠', desc: '펫 3마리 보유하기', target: 3, progress: 0, reward: 600, completed: false, claimed: false }
+    ],
+    marketNews: {
+        text: '평화로운 루팡의 날입니다.',
+        impact: 1, // 1은 중립, >1은 호재, <1은 악재
+        targetId: null // 특정 종목 타겟 (null이면 전체)
+    },
     leaderboard: [
         { name: '김부장(은퇴희망)', level: 42, title: '전설의 루팡' },
         { name: '재무팀 박대리', level: 35, title: '투명인간' },
@@ -99,9 +110,21 @@ const useGameStore = create((set) => ({
             createdAt: new Date().toISOString()
         }
 
+        const newPets = [...state.pets, newPet]
+
+        // 업적 체크: 펫 보유
+        const newAchievements = state.achievements.map(a => {
+            if (a.id === 'pet_fan' && !a.completed) {
+                const prog = newPets.length
+                return { ...a, progress: prog, completed: prog >= a.target }
+            }
+            return a
+        })
+
         return {
             inventory: { ...state.inventory, eggs: state.inventory.eggs - 1 },
-            pets: [...state.pets, newPet]
+            pets: newPets,
+            achievements: newAchievements
         }
     }),
 
@@ -198,20 +221,51 @@ const useGameStore = create((set) => ({
     addExperience: (exp) => set((state) => {
         const newExp = state.experience + exp
         const levelUpThreshold = state.level * 100
+        let newLevel = state.level
+        let finalizedExp = newExp
+
         if (newExp >= levelUpThreshold) {
-            return {
-                level: state.level + 1,
-                experience: newExp - levelUpThreshold
-            }
+            newLevel = state.level + 1
+            finalizedExp = newExp - levelUpThreshold
         }
-        return { experience: newExp }
+
+        // 직급 자동 업데이트 로직
+        const getPosition = (lv) => {
+            if (lv >= 100) return '사장 (루팡의 정점)'
+            if (lv >= 90) return '부사장'
+            if (lv >= 80) return '전무'
+            if (lv >= 70) return '상무'
+            if (lv >= 60) return '이사'
+            if (lv >= 50) return '부장'
+            if (lv >= 40) return '차장'
+            if (lv >= 30) return '과장'
+            if (lv >= 20) return '대리'
+            if (lv >= 10) return '주임'
+            return '사원'
+        }
+
+        // 업적 체크: 레벨업
+        const newAchievements = state.achievements.map(a => {
+            if (a.id === 'lv_5' && !a.completed) {
+                const prog = Math.max(a.progress, newLevel)
+                return { ...a, progress: prog, completed: prog >= a.target }
+            }
+            return a
+        })
+
+        return {
+            level: newLevel,
+            experience: finalizedExp,
+            officePosition: getPosition(newLevel),
+            achievements: newAchievements
+        }
     }),
 
     toggleWorkMode: () => set((state) => ({ isWorkMode: !state.isWorkMode })),
     setActiveTab: (tab) => set({ activeTab: tab }),
     setWorkTemplate: (template) => set({ workTemplate: template }),
 
-    // Semi-Hard Economy Logic: 포인트 지급 함수 (난이도 조절)
+    // Semi-Hard Economy Logic: 포인트 지급 함수 (난이도 조절 및 업적 체크)
     earnPoints: (type) => set((state) => {
         let baseAmount = 0
         let expGain = 0
@@ -233,17 +287,49 @@ const useGameStore = create((set) => ({
                 baseAmount = 0
         }
 
+        const newPoints = state.points + baseAmount
+        const newExp = state.experience + expGain
+
+        // 업적 체크: 자산가
+        const newAchievements = state.achievements.map(a => {
+            if (a.id === 'rich_10k' && !a.completed) {
+                const prog = Math.max(a.progress, newPoints)
+                return { ...a, progress: prog, completed: prog >= a.target }
+            }
+            return a
+        })
+
         return {
-            points: state.points + baseAmount,
-            experience: state.experience + expGain
+            points: newPoints,
+            experience: newExp,
+            achievements: newAchievements
         }
     }),
 
-    // 투자 시스템 액션
-    updateStockPrices: () => set((state) => ({
-        stocks: state.stocks.map(s => {
-            const change = (Math.random() - 0.5) * (s.id === 'office_coin' ? 40 : 10) // 코인은 변동폭 큼
-            const newPrice = Math.max(10, Math.floor(s.price + change))
+    // 투자 시스템 액션: 뉴스 연동 고도화
+    updateStockPrices: () => set((state) => {
+        // 1. 뉴스 갱신 (10% 확률로 새로운 소식)
+        let nextNews = state.marketNews
+        if (Math.random() < 0.1) {
+            const newsPool = [
+                { text: '폭시전자, 신형 키보드 출시 임박! 시장의 기대감이 높습니다.', impact: 1.2, targetId: 'fox_electronics' },
+                { text: '바나나테크, 서버실 화재 발생.. 복구에 난항이 예상됩니다.', impact: 0.7, targetId: 'banana_tech' },
+                { text: '오피스코인, 정부 규제 소식에 투자 심리가 위축되었습니다.', impact: 0.5, targetId: 'office_coin' },
+                { text: '전체 시장에 훈풍이 붑니다. 정부의 워라밸 지원금 발표!', impact: 1.1, targetId: null },
+                { text: '루팡들의 대규모 퇴사 열풍? 노동 생산성 저하 우려.', impact: 0.9, targetId: null }
+            ]
+            nextNews = newsPool[Math.floor(Math.random() * newsPool.length)]
+        }
+
+        const nextStocks = state.stocks.map(s => {
+            const isTarget = nextNews.targetId === s.id || nextNews.targetId === null
+            const newsModifier = isTarget ? nextNews.impact : 1
+            const randomVolatility = (Math.random() - 0.5) * (s.id === 'office_coin' ? 60 : 20)
+
+            // 뉴스 영향력 반영 가격 변동
+            const change = (randomVolatility * newsModifier) + (newsModifier > 1 ? 5 : newsModifier < 1 ? -5 : 0)
+            const newPrice = Math.max(5, Math.floor(s.price + change))
+
             return {
                 ...s,
                 price: newPrice,
@@ -251,7 +337,9 @@ const useGameStore = create((set) => ({
                 history: [...s.history.slice(-9), newPrice]
             }
         })
-    })),
+
+        return { stocks: nextStocks, marketNews: nextNews }
+    }),
 
     buyStock: (stockId, amount) => set((state) => {
         const stock = state.stocks.find(s => s.id === stockId)
@@ -271,9 +359,19 @@ const useGameStore = create((set) => ({
             newPortfolio = [...state.portfolio, { stockId, amount, avgPrice: stock.price }]
         }
 
+        // 업적 체크: 실전 투자자
+        const newAchievements = state.achievements.map(a => {
+            if (a.id === 'trader' && !a.completed) {
+                const prog = a.progress + 1
+                return { ...a, progress: prog, completed: prog >= a.target }
+            }
+            return a
+        })
+
         return {
             points: state.points - totalCost,
-            portfolio: newPortfolio
+            portfolio: newPortfolio,
+            achievements: newAchievements
         }
     }),
 
@@ -297,6 +395,17 @@ const useGameStore = create((set) => ({
         return {
             points: state.points + totalReturn,
             portfolio: newPortfolio
+        }
+    }),
+
+    // 업적 보상 수령 Action
+    claimAchievement: (id) => set((state) => {
+        const achievement = state.achievements.find(a => a.id === id)
+        if (!achievement || !achievement.completed || achievement.claimed) return {}
+
+        return {
+            points: state.points + achievement.reward,
+            achievements: state.achievements.map(a => a.id === id ? { ...a, claimed: true } : a)
         }
     }),
 
